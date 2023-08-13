@@ -1,27 +1,17 @@
-pipeline {
-    agent {
-        docker {
-            image 'node:lts-alpine'
-            args '-p 3000:3000'
-        }
-    }
-    stages {
+node {
+    docker.image('node:lts-alpine').inside('-p 3000:3000') {
         stage('Build') {
-            steps {
-                sh 'npm install'
-            }
+            sh 'npm install'
         }
-        stage('Test') { 
-            steps {
-                sh './jenkins/scripts/test.sh' 
-            }
+        
+        stage('Test') {
+            sh './jenkins/scripts/test.sh'
         }
+        
         stage('Deliver') {
-            steps {
-                sh './jenkins/scripts/deliver.sh'
-                input message: 'Finished using the website? (Click "Proceed" to continue)'
-                sh './jenkins/scripts/kill.sh'
-            }
+            sh './jenkins/scripts/deliver.sh'
+            input message: 'Finished using the website? (Click "Proceed" to continue)'
+            sh './jenkins/scripts/kill.sh'
         }
     }
 }
