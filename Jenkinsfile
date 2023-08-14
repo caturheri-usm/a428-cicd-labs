@@ -18,7 +18,6 @@ node {
                 sleep(60)
                 sh './jenkins/scripts/kill.sh'
             }
-           
         }
     }
 }
