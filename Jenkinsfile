@@ -1,27 +1,32 @@
-node {
-    checkout scm
-
-    docker.image('node:lts-bullseye-slim').inside('-p 3000:3000') {
-        stage('Build') {
-            sh 'npm install'
+pipeline {
+    agent {
+        docker {
+            image 'node:16-buster-slim' 
+            args '-p 3000:3000' 
         }
-
+    }
+    stages {
+        stage('Build') { 
+            steps {
+                sh 'npm install' 
+            }
+        }
         stage('Test') {
-            sh './jenkins/scripts/test.sh'
+            steps {
+                sh './jenkins/scripts/test.sh'
+            }
         }
-
         stage('Manual Approval') {
-            input message: 'Lanjut tahap deploy? (Klik "Proceed" untuk ke tahap deploy)'
+            steps {
+                 input message: 'Lanjutkan ke tahap Deploy? (Klik "Proceed" untuk melanjutkan)'
+            }
         }
-
-        stage('Deploy') {
-            sh './jenkins/scripts/deliver.sh'
-
-            input message: 'Sudah selesai menggunakan React App? (Klik "Proceed" untuk mengakhiri)'
-
-            sleep time: 60, unit: 'SECONDS'
-
-            sh './jenkins/scripts/kill.sh'
+         stage('Deploy') {
+            steps {
+                sh './jenkins/scripts/deliver.sh'
+                sleep(time: 1, unit: 'MINUTES')
+                sh './jenkins/scripts/kill.sh'
+            }
         }
     }
 }
