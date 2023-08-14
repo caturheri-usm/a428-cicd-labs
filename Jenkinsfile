@@ -1,22 +1,26 @@
 node {
-    docker.image('node:16-buster-slim').inside('-p 3000:3000'){
+    checkout scm
+
+    docker.image('node:lts-bullseye-slim').inside('-p 3000:3000') {
         stage('Build') {
-            checkout scm
             sh 'npm install'
         }
-    }
-    stage('Test') {  
-        docker.image('node:16-buster-slim').inside('-p 3000:3000') {
+
+        stage('Test') {
             sh './jenkins/scripts/test.sh'
         }
-    }
-    stage('Manual Approval'){
-        input message: 'Lanjutkan ke tahap deploy? (Click "Proceed" to continue)'
-    }
-    stage('Deploy') { 
-        docker.image('node:16-buster-slim').inside('-p 3000:3000') {
+
+        stage('Manual Approval') {
+            input message: 'Lanjut tahap deploy? (Klik "Proceed" untuk ke teahap deploy)'
+        }
+
+        stage('Deploy') {
             sh './jenkins/scripts/deliver.sh'
-            sleep(60)
+
+            input message: 'Sudah selesai menggunakan React App? (Klik "Proceed" untuk mengakhiri)'
+
+            sleep time: 60, unit: 'SECONDS'
+
             sh './jenkins/scripts/kill.sh'
         }
     }
